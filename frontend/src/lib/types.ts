@@ -9,6 +9,8 @@ export interface Store {
   bot_prompt: string;
   conexao_ok: boolean;
   conexao_msg: string;
+  api_key: string;
+  lojista_email: string;
   created_at: string;
 }
 
@@ -17,6 +19,8 @@ export interface StoreCreate {
   token: string;
   demo: boolean;
   bot_prompt: string;
+  lojista_email: string;
+  lojista_senha: string;
 }
 
 export interface ConnectionResult {

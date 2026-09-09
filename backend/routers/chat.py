@@ -1,8 +1,9 @@
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 
 from lib import bot
+from lib.auth import User, can_access_store, optional_user
 from lib.db import db
 from models.schemas import ChatMessage, ChatRequest, ChatResponse, OrderRecord, ToolTrace
 from routers.stores import client_for, get_store
@@ -10,12 +11,25 @@ from routers.stores import client_for, get_store
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 
+async def authorize(store_id: str, user: Optional[User], api_key: Optional[str]):
+    """Painel: sessão com acesso à loja. Conector WhatsApp: header X-API-Key da loja."""
+    store = await get_store(store_id)
+    if user is not None and can_access_store(user, store_id):
+        return store
+    if api_key and store.api_key and api_key == store.api_key:
+        return store
+    raise HTTPException(status_code=401, detail="Sem acesso a esta loja")
+
+
 def _session_key(store_id: str, session_id: str) -> str:
     return f"{store_id}:{session_id}"
 
 
 @router.get("/{store_id}/{session_id}", response_model=List[ChatMessage])
-async def history(store_id: str, session_id: str):
+async def history(store_id: str, session_id: str,
+                  user: Optional[User] = Depends(optional_user),
+                  x_api_key: Optional[str] = Header(default=None)):
+    await authorize(store_id, user, x_api_key)
     docs = await db.chat_messages.find(
         {"store_id": store_id, "session_id": session_id}
     ).sort("created_at", 1).to_list(500)
@@ -25,17 +39,22 @@ async def history(store_id: str, session_id: str):
 
 
 @router.delete("/{store_id}/{session_id}", status_code=204)
-async def reset(store_id: str, session_id: str):
+async def reset(store_id: str, session_id: str,
+                user: Optional[User] = Depends(optional_user),
+                x_api_key: Optional[str] = Header(default=None)):
+    await authorize(store_id, user, x_api_key)
     await db.chat_messages.delete_many({"store_id": store_id, "session_id": session_id})
     bot.reset_session(_session_key(store_id, session_id))
     return None
 
 
 @router.post("/{store_id}", response_model=ChatResponse)
-async def send(store_id: str, payload: ChatRequest):
+async def send(store_id: str, payload: ChatRequest,
+               user: Optional[User] = Depends(optional_user),
+               x_api_key: Optional[str] = Header(default=None)):
     if not payload.message.strip():
         raise HTTPException(status_code=400, detail="Mensagem vazia")
-    store = await get_store(store_id)
+    store = await authorize(store_id, user, x_api_key)
     lad = client_for(store)
 
     system_message = bot.BASE_PROMPT.format(

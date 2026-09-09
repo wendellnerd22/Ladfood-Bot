@@ -33,7 +33,21 @@ tamanhos 4=Grande/5=Pequena, bebidas 340001/340002) e cria pedidos calculados lo
 4. `/whatsapp` instruções de conectores open source (Baileys, Evolution API, WPPConnect).
 
 ## Auth
-Não há login — painel aberto (MVP de revenda).
+Sessão por cookie httpOnly (JWT, `zp_session`), rotas em `/api/auth/*`
+(`POST /auth/login`, `POST /auth/logout`, `GET /auth/me`). Frontend usa `lib/session.ts`
+(`useMe`, `beginSession`, `endSession`) e `/login` como página pública.
+
+Papéis:
+- **admin (revendedor)**: CRUD de lojas, vê token LAD e api_key, cria o usuário do lojista
+  (e-mail + senha no formulário da loja), acessa todas as páginas.
+- **lojista**: só a própria loja (`user.store_id`) — visão geral, cardápio, pedidos e simulador.
+  Token LAD e api_key vêm mascarados; PATCH aceita apenas `bot_prompt`; DELETE retorna 403.
+
+Coleção `users`: id, email, nome, role, store_id, senha_hash (bcrypt/passlib), created_at.
+Admin inicial semeado no lifespan: admin@zappedidos.com / Zap@2026.
+
+Conector WhatsApp: `POST /api/chat/{store_id}` autoriza por sessão OU header `X-API-Key`
+igual ao `stores.api_key`.
 
 ## Observações
 - O token LAD fornecido pelo usuário (e1caf...31) retorna 401 na API real; por isso o modo

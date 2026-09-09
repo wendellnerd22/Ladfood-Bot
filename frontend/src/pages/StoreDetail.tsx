@@ -6,6 +6,7 @@ import { apiGet, apiPost } from "@/lib/api";
 import { brl, STATUS_LAD } from "@/lib/types";
 import type { Cardapio, LojaInfo, OrderRecord, Store } from "@/lib/types";
 import AppShell from "@/components/layout/AppShell";
+import { useMe } from "@/lib/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function StoreDetail() {
   const { id = "" } = useParams();
   const qc = useQueryClient();
+  const me = useMe();
 
   const store = useQuery({ queryKey: ["store", id], queryFn: () => apiGet<Store>(`/stores/${id}`) });
   const loja = useQuery({
@@ -53,13 +55,15 @@ export default function StoreDetail() {
 
   return (
     <AppShell>
-      <Link
-        to="/"
-        className="mb-5 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
-        data-testid="back-to-stores-link"
-      >
-        <ArrowLeft className="size-4" /> Voltar para as lojas
-      </Link>
+      {me.data?.role === "admin" && (
+        <Link
+          to="/"
+          className="mb-5 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
+          data-testid="back-to-stores-link"
+        >
+          <ArrowLeft className="size-4" /> Voltar para as lojas
+        </Link>
+      )}
 
       <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
         <div>

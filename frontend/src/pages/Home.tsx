@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import { toast } from "sonner";
@@ -16,14 +16,23 @@ import { apiDelete, apiGet, apiPost } from "@/lib/api";
 import type { ConnectionResult, Store } from "@/lib/types";
 import AppShell from "@/components/layout/AppShell";
 import StoreFormDialog from "@/components/stores/StoreFormDialog";
+import { useMe } from "@/lib/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function Home() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
+  const me = useMe();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Store | null>(null);
+
+  useEffect(() => {
+    if (me.data && me.data.role !== "admin") {
+      navigate(`/lojas/${me.data.store_id ?? ""}`, { replace: true });
+    }
+  }, [me.data, navigate]);
 
   const { data: stores, isError } = useQuery({
     queryKey: ["stores"],

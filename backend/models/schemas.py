@@ -14,6 +14,8 @@ class StoreCreate(BaseModel):
     token: str = ""
     demo: bool = False
     bot_prompt: str = ""
+    lojista_email: str = ""
+    lojista_senha: str = ""
 
 
 class StoreUpdate(BaseModel):
@@ -21,6 +23,8 @@ class StoreUpdate(BaseModel):
     token: Optional[str] = None
     demo: Optional[bool] = None
     bot_prompt: Optional[str] = None
+    lojista_email: Optional[str] = None
+    lojista_senha: Optional[str] = None
 
 
 class Store(BaseModel):
@@ -31,6 +35,8 @@ class Store(BaseModel):
     bot_prompt: str = ""
     conexao_ok: bool = False
     conexao_msg: str = "Nunca testada"
+    api_key: str = Field(default_factory=lambda: uuid.uuid4().hex)
+    lojista_email: str = ""
     created_at: datetime = Field(default_factory=_now)
 
 

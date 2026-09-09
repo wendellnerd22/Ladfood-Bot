@@ -19,7 +19,7 @@ sock.ev.on('messages.upsert', async ({ messages }) => {
   const texto = msg.message.conversation ?? ''
   const r = await fetch('SEU_PAINEL/api/chat/ID_DA_LOJA', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-API-Key': 'CHAVE_DA_LOJA' },
     body: JSON.stringify({ session_id: msg.key.remoteJid, message: texto }),
   })
   const { reply } = await r.json()
@@ -119,7 +119,7 @@ export default function WhatsAppConnect() {
                 "Cadastre a loja aqui e teste o bot no simulador.",
                 "Suba o conector open source no seu servidor (Docker resolve).",
                 "Leia o QR Code com o WhatsApp do lojista.",
-                "Aponte o webhook para POST /api/chat/{id_da_loja} deste painel.",
+                "Aponte o webhook para POST /api/chat/{id_da_loja} deste painel, com o header X-API-Key da loja (veja em Editar loja).",
                 "Devolva o campo reply ao cliente — o pedido já entra na LAD.",
               ].map((s, i) => (
                 <li key={s} className="flex gap-3">

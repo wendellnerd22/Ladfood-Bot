@@ -22,6 +22,8 @@ from lib.db import client, db, ensure_indexes
 # Startup runs before the yield, shutdown after it. Add your own setup/teardown here.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    from lib.auth import ensure_admin_seed
+    await ensure_admin_seed()
     app.state.index_task = asyncio.create_task(ensure_indexes())  # background: a big index build must not block boot
     yield
     client.close()
@@ -61,9 +63,11 @@ async def get_status_checks():
     return [StatusCheck(**status_check) for status_check in status_checks]
 
 # Include the router in the main app
+from routers.auth import router as auth_router  # noqa: E402
 from routers.chat import router as chat_router  # noqa: E402
 from routers.stores import router as stores_router  # noqa: E402
 
+api_router.include_router(auth_router)
 api_router.include_router(stores_router)
 api_router.include_router(chat_router)
 

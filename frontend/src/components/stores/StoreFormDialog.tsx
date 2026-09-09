@@ -29,6 +29,8 @@ export default function StoreFormDialog({ open, onOpenChange, store }: Props) {
   const [token, setToken] = useState("");
   const [demo, setDemo] = useState(true);
   const [prompt, setPrompt] = useState("");
+  const [lojistaEmail, setLojistaEmail] = useState("");
+  const [lojistaSenha, setLojistaSenha] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -36,11 +38,20 @@ export default function StoreFormDialog({ open, onOpenChange, store }: Props) {
     setToken(store?.token ?? "");
     setDemo(store?.demo ?? true);
     setPrompt(store?.bot_prompt ?? "");
+    setLojistaEmail(store?.lojista_email ?? "");
+    setLojistaSenha("");
   }, [open, store]);
 
   const save = useMutation({
     mutationFn: async () => {
-      const body = { nome, token, demo, bot_prompt: prompt };
+      const body = {
+        nome,
+        token,
+        demo,
+        bot_prompt: prompt,
+        lojista_email: lojistaEmail,
+        lojista_senha: lojistaSenha,
+      };
       return store
         ? apiPatch<Store>(`/stores/${store.id}`, body)
         : apiPost<Store>("/stores", body);
@@ -112,6 +123,48 @@ export default function StoreFormDialog({ open, onOpenChange, store }: Props) {
               placeholder="Ex.: sempre ofereça bebida antes de fechar o pedido."
             />
           </div>
+          <div className="grid gap-2">
+            <Label htmlFor="store-lojista-email">E-mail do lojista</Label>
+            <Input
+              id="store-lojista-email"
+              type="email"
+              data-testid="store-form-lojista-email-input"
+              value={lojistaEmail}
+              onChange={(e) => setLojistaEmail(e.target.value)}
+              placeholder="lojista@empresa.com"
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="store-lojista-senha">
+              {store ? "Nova senha do lojista (vazio mantém a atual)" : "Senha do lojista"}
+            </Label>
+            <Input
+              id="store-lojista-senha"
+              type="password"
+              data-testid="store-form-lojista-senha-input"
+              value={lojistaSenha}
+              onChange={(e) => setLojistaSenha(e.target.value)}
+              placeholder="••••••••"
+            />
+            <p className="text-xs text-muted-foreground">
+              Com esse acesso o lojista vê só esta loja — sem token LAD e sem apagar a loja.
+            </p>
+          </div>
+          {store?.api_key ? (
+            <div className="grid gap-2">
+              <Label>Chave de API do conector WhatsApp</Label>
+              <code
+                className="block break-all rounded-lg border border-border bg-secondary/40 px-3 py-2 font-mono text-[11px]"
+                data-testid="store-form-api-key"
+              >
+                {store.api_key}
+              </code>
+              <p className="text-xs text-muted-foreground">
+                Envie no header <span className="font-mono">X-API-Key</span> ao chamar{" "}
+                <span className="font-mono">POST /api/chat/{store.id}</span>.
+              </p>
+            </div>
+          ) : null}
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)} data-testid="store-form-cancel-button">
