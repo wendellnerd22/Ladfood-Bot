@@ -63,6 +63,7 @@ export default function Simulator() {
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["chat", storeId, session] });
       qc.invalidateQueries({ queryKey: ["pedidos", storeId] });
+      if (res.payment_intent_id) setIntentId(res.payment_intent_id);
       if (res.order_uuid) toast.success("Pedido criado na LAD", { description: res.order_uuid });
     },
     onError: () => toast.error("O bot não conseguiu responder. Tente novamente."),

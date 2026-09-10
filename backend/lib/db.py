@@ -36,6 +36,14 @@ INDEXES: dict[str, list[IndexModel]] = {
         IndexModel([("email", ASCENDING)], name="email", unique=True),
         IndexModel([("store_id", ASCENDING)], name="store_id"),
     ],
+    "payment_intents": [
+        IndexModel([("id", ASCENDING)], name="id", unique=True),
+        IndexModel([("store_id", ASCENDING), ("created_at", DESCENDING)], name="store_created"),
+        IndexModel([("provider_payment_id", ASCENDING)], name="provider_payment_id"),
+    ],
+    "webhook_events": [
+        IndexModel([("event_key", ASCENDING)], name="event_key", unique=True),
+    ],
 }
 
 

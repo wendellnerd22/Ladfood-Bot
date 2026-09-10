@@ -7,6 +7,7 @@ export interface Store {
   token: string;
   demo: boolean;
   bot_prompt: string;
+  cobrar_antes: boolean;
   conexao_ok: boolean;
   conexao_msg: string;
   api_key: string;
@@ -14,13 +15,56 @@ export interface Store {
   created_at: string;
 }
 
+export interface PaymentIntent {
+  id: string;
+  store_id: string;
+  session_id: string;
+  metodo: string;
+  forma_lad: string;
+  status: string;
+  provider: string;
+  provider_payment_id: string;
+  valor: number;
+  valor_itens: number;
+  valor_entrega: number;
+  cliente_nome: string;
+  cliente_telefone: string;
+  pix_copia_e_cola: string;
+  pix_qr_base64: string;
+  checkout_url: string;
+  lad_order_uuid: string | null;
+  lad_erro: string | null;
+  created_at: string;
+  approved_at: string | null;
+}
+
+export interface PaymentConfig {
+  provider: string;
+  simulado: boolean;
+}
+
+export const STATUS_PAGAMENTO: Record<string, { label: string; className: string }> = {
+  pendente: { label: "Aguardando pagamento", className: "bg-[#451A03] text-[#FED7AA] border-[#EA580C]" },
+  aprovado: { label: "Pago", className: "bg-[#065F46] text-[#D1FAE5] border-[#10B981]" },
+  rejeitado: { label: "Recusado", className: "bg-[#450A0A] text-[#FECACA] border-[#DC2626]" },
+  expirado: { label: "Expirado", className: "bg-[#3F1515] text-[#FEE2E2] border-[#B91C1C]" },
+};
+
 export interface StoreCreate {
   nome: string;
   token: string;
   demo: boolean;
   bot_prompt: string;
+  cobrar_antes: boolean;
   lojista_email: string;
   lojista_senha: string;
+}
+
+export interface ChatResponse {
+  reply: string;
+  tools: ToolTrace[];
+  order_uuid: string | null;
+  payment_intent_id: string | null;
 }
 
 export interface ConnectionResult {
@@ -44,12 +88,6 @@ export interface ChatMessage {
   text: string;
   tools: ToolTrace[];
   created_at: string;
-}
-
-export interface ChatResponse {
-  reply: string;
-  tools: ToolTrace[];
-  order_uuid: string | null;
 }
 
 export interface OrderRecord {

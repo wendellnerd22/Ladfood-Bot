@@ -68,9 +68,13 @@ async def send(store_id: str, payload: ChatRequest,
     await db.chat_messages.insert_one(user_msg.model_dump())
 
     try:
-        text, traces, pedido = await bot.run_turn(key, system_message, lad, payload.message.strip())
+        ctx = bot.BotContext(store=store, session_id=payload.session_id, lad=lad)
+        text, traces, pedido, intent_id = await bot.run_turn(
+            key, system_message, ctx, payload.message.strip()
+        )
     except Exception as exc:  # noqa: BLE001
         detalhe = str(exc)
+        intent_id = None
         if "Budget has been exceeded" in detalhe or "RateLimitError" in detalhe:
             text = ("Estou temporariamente fora do ar: os créditos da chave de IA (Emergent LLM Key) "
                     "acabaram. Recarregue os créditos no painel da Emergent para o bot voltar a atender.")
@@ -101,4 +105,5 @@ async def send(store_id: str, payload: ChatRequest,
         )
         await db.orders.update_one({"id": order_uuid}, {"$set": record.model_dump()}, upsert=True)
 
-    return ChatResponse(reply=text, tools=[ToolTrace(**t) for t in traces], order_uuid=order_uuid)
+    return ChatResponse(reply=text, tools=[ToolTrace(**t) for t in traces],
+                        order_uuid=order_uuid, payment_intent_id=intent_id)
